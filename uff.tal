@@ -1,0 +1,62 @@
+
+
+|00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
+|10 @Console &vector $2 &read $5 &type $1 &write $1 &error $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+
+
+%PUTC { .Console/write DEO }
+%ENDL { #0a PUTC }
+
+
+|0100
+
+    #13 LIT "_ border
+    #20 PUTC
+
+    ;msg       ( push msg ptr )
+    @loop
+        LDAk    ( load next byte of message )
+
+        DUP ?{ POP POP2 !endstr }   ( if c == 0, we're done; bail )
+
+        ( stack now < pnext c > )
+        .Console/write DEO  ( output c )
+        INC2    ( ++pnext )
+        !loop
+    @endstr
+    ENDL
+
+    #13 LIT "T border
+
+ (   #05 print-digit
+    #20 PUTC
+    #07 print-digit
+    ENDL )
+
+    #80 .System/halt DEO
+
+BRK
+
+
+@print-digit    ( d -- ) ( 0 <= d <= 9 )
+    #30 ADD PUTC
+    JMP2r
+
+@border ( count char -- )
+    ,&chr STR
+    #00 &>l
+        INC EQUk ?{ ,&chr LDR PUTC !&>l }
+    POP POP
+    ENDL
+    JMP2r
+
+    ( locals )
+        &chr "x
+
+
+@msg
+    "whop 20 "bop 20 "a 20 "looba 00
+
+
+
