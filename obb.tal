@@ -56,6 +56,8 @@ BRK
             ( inc screen column )
             .Screen/x DEI2 INC2 .Screen/x DEO2
 
+            .height LDZ2 #02 SFT2   ( push ceilRows )
+            .height LDZ2 #01 SFT2   ( push wallRows )
             drawCol
 
             ( inc column, loop if not done )
@@ -82,26 +84,23 @@ BRK
     ( loop y from BORDER to maxY )
     BORDER .Screen/y DEO2
 
-    .height LDZ2 
-        
-        DUP2 #02 SFT2   ( push rowCount )
-        #0000 &lpTop    ( push rowIx )
-            INC2 EQU2k ?{ #00 PUTPIXEL !&lpTop }
-        POP2 POP2       ( pop rowIx, rowCount )
+    ( ceiling ----- )
+    SWP2    ( use ceilRows first )   
+    #0000 &lpTop    ( push rowIx )
+        INC2 EQU2k ?{ #00 PUTPIXEL !&lpTop }
+    POP2 POP2       ( pop rowIx, ceilRows )
 
-        DUP2 #01 SFT2   ( push rowCount )
-        #0000 &lpMid    ( push rowIx )
-            INC2 EQU2k ?{ #03 PUTPIXEL !&lpMid }
-        POP2 POP2       ( pop rowIx, rowCount )
+    ( wall -------- )
+    #0000 &lpMid    ( push rowIx )
+        INC2 EQU2k ?{ #03 PUTPIXEL !&lpMid }
+    POP2 POP2       ( pop rowIx, wallRows )
 
-        ( height is at top of stack and we need to add the top border to get maxY )
-        BORDER ADD2
-        .Screen/y DEI2  ( push y )
-        &lpBtm
-            INC2 EQU2k ?{ #02 PUTPIXEL !&lpBtm }
-        POP2            ( pop y )
-
-    POP2    ( pop height )
+    ( height plus top border to get maxY )
+    .height LDZ2 BORDER ADD2
+    .Screen/y DEI2  ( push y )
+    &lpBtm
+        INC2 EQU2k ?{ #02 PUTPIXEL !&lpBtm }
+    POP2            ( pop y, maxY )
 
     JMP2r
 
