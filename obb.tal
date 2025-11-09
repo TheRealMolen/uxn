@@ -7,56 +7,84 @@
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller &vector $2 &button $1 &key $1
 
+
+|0000
+    @height $2
+
+
 |0100
     ;on-controller .Controller/vector DEO2
     ;on-frame .Screen/vector DEO2
 
     ( set palette )
-    #f07f .System/r DEO2
-    #f0d6 .System/g DEO2
-    #f0b2 .System/b DEO2
+    #1d7f .System/r DEO2
+    #1dd6 .System/g DEO2
+    #1db2 .System/b DEO2
 BRK
+
+%PUTC { .Console/write DEO }
+%ENDL { #0a PUTC }
+
+%DBGTRACE { #01 .System/debug DEO ENDL }
 
 
 ( pix -- )
 %PUTPIXEL { .Screen/pixel DEO }
 
+%BORDER { #0020 }
+
+
 
 @on-frame
-    
-    ( draw a dot )
-    #0010 .Screen/x DEO2
-    #0000 .Screen/y DEO2
+
+    ( calc dimensions )
+    .Screen/height DEI2
+        BORDER #10 SFT2
+            SUB2
+            .height STZ2
+
     #02 .Screen/auto DEO    ( auto-inc y )
 
-    ( loop from 0 to screen height )
-    .Screen/height DEI2
-        DUP2 #02 SFT2
-        #0000 &lpTop
-            INC2 EQU2k ?{ #01 PUTPIXEL !&lpTop }
-        POP2 POP2
-        DUP2 #01 SFT2
-        #0000 &lpMid
-            INC2 EQU2k ?{ #03 PUTPIXEL !&lpMid }
-        POP2 POP2
-        DUP2 #02 SFT2
-        #0000 &lpBtm
-            INC2 EQU2k ?{ #01 PUTPIXEL !&lpBtm }
-        POP2 POP2
-    POP2
-    
-      (  DEC ?&for-y
+    ( loop x from BORDER to maxX )
+    BORDER .Screen/x DEO2
+    .Screen/width DEI2
+        BORDER #10 SFT2
+            SUB2        ( push width )
+        #0000           ( push colIx )
 
-    #03 .Screen/pixel DEO
-    #03 .Screen/pixel DEO
-    #03 .Screen/pixel DEO
-    #03 .Screen/pixel DEO
-    #03 .Screen/pixel DEO
-    #03 .Screen/pixel DEO
-    #03 .Screen/pixel DEO
-    #03 .Screen/pixel DEO
-      )
-BRK
+        &lpCol
+            ( inc screen column )
+            .Screen/x DEI2 INC2 .Screen/x DEO2
+
+            ( loop y from BORDER to maxY )
+            BORDER .Screen/y DEO2
+
+            .height LDZ2 
+                
+                DUP2 #02 SFT2   ( push rowCount )
+                #0000 &lpTop    ( push rowIx )
+                    INC2 EQU2k ?{ #02 PUTPIXEL !&lpTop }
+                POP2 POP2       ( pop rowIx, rowCount )
+
+                DUP2 #01 SFT2   ( push rowCount )
+                #0000 &lpMid    ( push rowIx )
+                    INC2 EQU2k ?{ #03 PUTPIXEL !&lpMid }
+                POP2 POP2       ( pop rowIx, rowCount )
+
+                DUP2 #02 SFT2   ( push rowCount )
+                #0000 &lpBtm    ( push rowIx )
+                    INC2 EQU2k ?{ #02 PUTPIXEL !&lpBtm }
+                POP2 POP2       ( pop rowIx, rowCount )
+
+            POP2    ( pop height )
+
+            ( inc column, loop if not done )
+            INC2 EQU2k ?{ !&lpCol }
+        
+            POP2 ( pop colIx )
+        POP2 ( pop width )
+    
+    BRK
 
 @on-controller
     .Controller/key DEI ( read input )
@@ -64,5 +92,9 @@ BRK
     ( quit on keypress )
     #80 .System/halt DEO
 
-BRK
+    BRK
+
+
+
+
 
