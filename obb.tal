@@ -56,8 +56,9 @@ BRK
             ( inc screen column )
             .Screen/x DEI2 INC2 .Screen/x DEO2
 
-            .height LDZ2 #02 SFT2   ( push ceilRows )
-            .height LDZ2 #01 SFT2   ( push wallRows )
+            ( .height LDZ2 #02 SFT2   ( push ceilRows ) )
+            DUP2 #03 SFT2 INC2
+            .height LDZ2 OVR2 #10 SFT2 SUB22 BORDER SUB2  ( push wallRows )
             drawCol
 
             ( inc column, loop if not done )
@@ -87,7 +88,7 @@ BRK
     ( ceiling ----- )
     SWP2    ( use ceilRows first )   
     #0000 &lpTop    ( push rowIx )
-        INC2 EQU2k ?{ #00 PUTPIXEL !&lpTop }
+        INC2 EQU2k ?{ #02 PUTPIXEL !&lpTop }
     POP2 POP2       ( pop rowIx, ceilRows )
 
     ( wall -------- )
@@ -99,8 +100,8 @@ BRK
     .height LDZ2 BORDER ADD2
     .Screen/y DEI2  ( push y )
     &lpBtm
-        INC2 EQU2k ?{ #02 PUTPIXEL !&lpBtm }
-    POP2            ( pop y, maxY )
+        INC2 EQU2k ?{ #01 PUTPIXEL !&lpBtm }
+    POP2 POP2       ( pop y, maxY )
 
     JMP2r
 
